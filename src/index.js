@@ -208,9 +208,30 @@ type Query {
  }
 
 type Mutation {
-    creaetUser(name: String!, email: String!, age: Int, employed: Boolean!, gpa: Float): User!
-    createPost(title: String!, body: String!, published: Boolean!, authorId: ID!): Post!
-    createComment(text: String!, userId: ID!, postId: ID!): Comment!
+    creaetUser(payload: CreateUserInput): User!
+    createPost(payload: CreatePostInput): Post!
+    createComment(payload: CreateCommentInput): Comment!
+}
+
+input CreateUserInput {
+    name: String!
+    email: String!
+    age: Int
+    employed: Boolean!
+    gpa: Float
+}
+
+input CreatePostInput {
+    title: String!
+    body: String!
+    published: Boolean!
+    authorId: ID!
+}
+
+input CreateCommentInput {
+    text: String!
+    userId: ID!
+    postId: ID!
 }
 `;
 
@@ -316,7 +337,7 @@ const resolvers = {
   },
   Mutation: {
     creaetUser: (parent, args, ctx, info) => {
-      const { name, email, age, employed, gpa } = args;
+      const { name, email, age, employed, gpa } = args.payload;
 
       const emailTaken = users.some((user) => user.email === email);
 
@@ -340,7 +361,7 @@ const resolvers = {
       return newUser;
     },
     createPost: (parent, args, ctx, info) => {
-      const { title, body, published, authorId } = args;
+      const { title, body, published, authorId } = args.payload;
 
       const authorExists = users.some((user) => user.id === authorId);
 
@@ -360,7 +381,7 @@ const resolvers = {
       return newPost;
     },
     createComment: (parent, args, ctx, info) => {
-      const { text, userId, postId } = args;
+      const { text, userId, postId } = args.payload;
 
       const userExists = users.some((user) => user.id === userId);
 
