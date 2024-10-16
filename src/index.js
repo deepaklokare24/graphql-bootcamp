@@ -175,7 +175,6 @@ type Product {
     rating: Float
     inStock: Boolean!
 }
-
 type Post {
     id: ID!
     title: String!
@@ -184,7 +183,6 @@ type Post {
     author: User!
     comments: [Comment!]!
 }
-
 type Comment {
     id: ID!
     text: String!
@@ -193,7 +191,6 @@ type Comment {
     author: User!
     post: Post!
 }
-
 type Query {
     hello: String!
     message: String!
@@ -212,6 +209,8 @@ type Query {
 
 type Mutation {
     creaetUser(name: String!, email: String!, age: Int, employed: Boolean!, gpa: Float): User!
+    createPost(title: String!, body: String!, published: Boolean!, authorId: ID!): Post!
+    createComment(text: String!, userId: ID!, postId: ID!): Comment!
 }
 `;
 
@@ -317,7 +316,6 @@ const resolvers = {
   },
   Mutation: {
     creaetUser: (parent, args, ctx, info) => {
-      console.log("Arguments: " + JSON.stringify(args));
       const { name, email, age, employed, gpa } = args;
 
       const emailTaken = users.some((user) => user.email === email);
@@ -340,6 +338,52 @@ const resolvers = {
       users.push(newUser);
 
       return newUser;
+    },
+    createPost: (parent, args, ctx, info) => {
+      const { title, body, published, authorId } = args;
+
+      const authorExists = users.some((user) => user.id === authorId);
+
+      if (!authorExists) {
+        throw new Error("Author not found.");
+      }
+
+      const newPost = {
+        id: uuidv4(),
+        title,
+        body,
+        published,
+        author: authorId,
+        comments: [],
+      };
+      posts.push(newPost);
+      return newPost;
+    },
+    createComment: (parent, args, ctx, info) => {
+      const { text, userId, postId } = args;
+
+      const userExists = users.some((user) => user.id === userId);
+
+      if (!userExists) {
+        throw new Error("User not found.");
+      }
+
+      const postExists = posts.some(
+        (post) => post.id === postId && post.published === true
+      );
+
+      if (!postExists) {
+        throw new Error("Post not found.");
+      }
+
+      const newComment = {
+        id: uuidv4(),
+        text,
+        userId,
+        postId,
+      };
+      comments.push(newComment);
+      return newComment;
     },
   },
 };
