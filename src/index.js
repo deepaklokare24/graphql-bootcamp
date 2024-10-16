@@ -1,9 +1,10 @@
 import { createServer } from "node:http";
 import { createSchema, createYoga } from "graphql-yoga";
+import { v4 as uuidv4 } from "uuid";
 
 const users = [
   {
-    id: 1,
+    id: "1",
     name: "John Doe",
     email: "john.doe@example.com",
     age: 36,
@@ -11,7 +12,7 @@ const users = [
     gpa: null,
   },
   {
-    id: 2,
+    id: "2",
     name: "Jane Smith",
     email: "jane.smith@example.com",
     age: 28,
@@ -19,7 +20,7 @@ const users = [
     gpa: 7.5,
   },
   {
-    id: 3,
+    id: "3",
     name: "Alice Johnson",
     email: "alice.johnson@example.com",
     age: 42,
@@ -27,7 +28,7 @@ const users = [
     gpa: 9.0,
   },
   {
-    id: 4,
+    id: "4",
     name: "Bob Brown",
     email: "bob.brown@example.com",
     age: 30,
@@ -35,7 +36,7 @@ const users = [
     gpa: 8.5,
   },
   {
-    id: 5,
+    id: "5",
     name: "Charlie Davis",
     email: "charlie.davis@example.com",
     age: 34,
@@ -43,7 +44,7 @@ const users = [
     gpa: 8.0,
   },
   {
-    id: 6,
+    id: "6",
     name: "David Wilson",
     email: "david.wilson@example.com",
     age: 26,
@@ -51,7 +52,7 @@ const users = [
     gpa: 7.0,
   },
   {
-    id: 7,
+    id: "7",
     name: "Emily Thompson",
     email: "emily.thompson@example.com",
     age: 38,
@@ -59,7 +60,7 @@ const users = [
     gpa: 8.2,
   },
   {
-    id: 8,
+    id: "8",
     name: "Frank Miller",
     email: "frank.miller@example.com",
     age: 29,
@@ -67,7 +68,7 @@ const users = [
     gpa: 8.8,
   },
   {
-    id: 9,
+    id: "9",
     name: "Grace Wilson",
     email: "grace.wilson@example.com",
     age: 35,
@@ -75,7 +76,7 @@ const users = [
     gpa: 8.4,
   },
   {
-    id: 10,
+    id: "10",
     name: "John Smith",
     email: "john.smith@example.com",
     age: 36,
@@ -86,35 +87,35 @@ const users = [
 
 const posts = [
   {
-    id: 1,
+    id: "1",
     title: "GraphQL Tutorial",
     body: "Learn GraphQL with this comprehensive tutorial",
     published: true,
     author: "1",
   },
   {
-    id: 2,
+    id: "2",
     title: "Node.js and Express.js",
     body: "Learn Node.js and Express.js for building RESTful APIs",
     published: false,
     author: "2",
   },
   {
-    id: 3,
+    id: "3",
     title: "React.js and GraphQL",
     body: "Learn React.js and GraphQL for building dynamic web applications",
     published: true,
     author: "1",
   },
   {
-    id: 4,
+    id: "4",
     title: "Python and GraphQL",
     body: "Learn Python and GraphQL for building powerful web applications",
     published: true,
     author: "3",
   },
   {
-    id: 5,
+    id: "5",
     title: "GraphQL and MongoDB",
     body: "Learn GraphQL and MongoDB for building real-time applications",
     published: true,
@@ -124,34 +125,34 @@ const posts = [
 
 const comments = [
   {
-    id: 1,
+    id: "1",
     text: "Great tutorial!",
-    postId: 1,
-    userId: 1,
+    postId: "1",
+    userId: "1",
   },
   {
-    id: 2,
+    id: "2",
     text: "I'm enjoying it so far.",
-    postId: 1,
-    userId: 1,
+    postId: "1",
+    userId: "1",
   },
   {
-    id: 3,
+    id: "3",
     text: "I'd love to learn more about this topic.",
-    postId: 2,
-    userId: 3,
+    postId: "2",
+    userId: "3",
   },
   {
-    id: 4,
+    id: "4",
     text: "I agree with you.",
-    postId: 2,
-    userId: 4,
+    postId: "2",
+    userId: "4",
   },
   {
-    id: 5,
+    id: "5",
     text: "I think this is a great way to learn.",
-    postId: 3,
-    userId: 3,
+    postId: "3",
+    userId: "3",
   },
 ];
 
@@ -160,7 +161,7 @@ type User {
     id: ID!
     name: String!
     email: String
-    age: Int!
+    age: Int
     employed: Boolean!
     gpa: Float
     posts: [Post!]!
@@ -208,6 +209,10 @@ type Query {
     posts(searchStr: String): [Post!]!
     comments(postId: ID): [Comment!]!
  }
+
+type Mutation {
+    creaetUser(name: String!, email: String!, age: Int, employed: Boolean!, gpa: Float): User!
+}
 `;
 
 const resolvers = {
@@ -246,10 +251,6 @@ const resolvers = {
       };
     },
     greeting: (parent, args, ctx, info) => {
-      console.log("Parent: ", parent);
-      console.log("Args: ", args);
-      console.log("Context: ", ctx);
-      console.log("Info: ", info);
       let { name } = args;
 
       if (name) {
@@ -287,19 +288,12 @@ const resolvers = {
       if (!args?.postId) {
         return comments;
       }
-      console.log("Comments: ", comments);
-      console.log(
-        "Filtered comments: ",
-        comments.filter((comment) => comment.postId === Number(args.postId))
-      );
-      return comments.filter(
-        (comment) => comment.postId === Number(args.postId)
-      );
+      return comments.filter((comment) => comment.postId === args.postId);
     },
   },
   Post: {
     author: (parent) => {
-      return users.find((user) => user.id === Number(parent.author));
+      return users.find((user) => user.id === parent.author);
     },
     comments: (parent) => {
       return comments.filter((comment) => comment.postId === parent.id);
@@ -307,18 +301,45 @@ const resolvers = {
   },
   User: {
     posts: (parent) => {
-      return posts.filter((post) => Number(post.author) === parent.id);
+      return posts.filter((post) => post.author === parent.id);
     },
     comments: (parent) => {
-      return comments.filter((comment) => Number(comment.userId) === parent.id);
+      return comments.filter((comment) => comment.userId === parent.id);
     },
   },
   Comment: {
     author: (parent) => {
-      return users.find((user) => user.id === Number(parent.userId));
+      return users.find((user) => user.id === parent.userId);
     },
     post: (parent) => {
-      return posts.find((post) => post.id === Number(parent.postId));
+      return posts.find((post) => post.id === parent.postId);
+    },
+  },
+  Mutation: {
+    creaetUser: (parent, args, ctx, info) => {
+      console.log("Arguments: " + JSON.stringify(args));
+      const { name, email, age, employed, gpa } = args;
+
+      const emailTaken = users.some((user) => user.email === email);
+
+      if (emailTaken) {
+        throw new Error("Email already taken.");
+      }
+
+      const newUser = {
+        id: uuidv4(),
+        name,
+        email,
+        age,
+        employed,
+        gpa,
+        posts: [],
+        comments: [],
+      };
+
+      users.push(newUser);
+
+      return newUser;
     },
   },
 };
